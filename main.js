@@ -21,21 +21,61 @@ setTimeout(() => {
       "#add-to-chrome-navbar, #add-to-chrome-hero, #add-to-chrome-footer"
     )
     .forEach((e) => {
-      e.href = link
-      e.onclick = goToChromeStoreClick
+      if (isBVersion(deviceId)) {
+        e.href = "/register"
+        e.addEventListener(
+          "click",
+          () => {
+            postPevent("GO_TO_REGISTER", deviceId, null)
+          },
+          true
+        )
+      } else {
+        e.href = link
+        e.onclick = () => {
+          postPevent("GO_TO_CHROME_STORE", deviceId, {
+            origin: window.location.pathname,
+          })
+        }
+      }
     })
+
+  // REGISTER BUTTON
+  if (window.location.pathname === "/register") {
+    var form = document.querySelector("form#email-form")
+    form.addEventListener("submit", () => {
+      //console.log("pevent")
+    })
+  }
 }, 500)
 
-function goToChromeStoreClick() {
+// AB testing : is it version A or version B ?
+function isBVersion(id) {
+  return 1
+  return id
+    .toString()
+    .split("")
+    .reduce((a, v) => Number(a) + Number(v))
+    .toString(2)
+    .split("")
+    .slice(-1)
+}
+
+function postPevent(type, deviceId, props) {
   var headers = new Headers()
   headers.append("Content-Type", "application/json")
 
-  var raw = JSON.stringify({ type: "GO_TO_CHROME_STORE", deviceId: deviceId })
+  var body = JSON.stringify({
+    type: type,
+    deviceId: deviceId,
+  })
+
+  if (props) body.props = props
 
   var requestOptions = {
     method: "POST",
     headers: headers,
-    body: raw,
+    body: body,
     redirect: "follow",
   }
 
