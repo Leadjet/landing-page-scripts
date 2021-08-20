@@ -1,10 +1,16 @@
 setTimeout(() => {
   // SETUP LINK
+  const isFirstVisit = !localStorage.getItem("deviceId")
   const deviceId =
     localStorage.getItem("deviceId") ??
     `${Math.floor(10000 * (new Date().valueOf() + Math.random()))}`
 
   localStorage.setItem("deviceId", deviceId)
+
+  if (isFirstVisit)
+    postPevent("FIRST_VISIT_WEBSITE", deviceId, {
+      origin: window.location.pathname,
+    })
 
   let gaID = ""
   try {
