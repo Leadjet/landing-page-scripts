@@ -85,6 +85,21 @@ function postToServer(body, path) {
 }
 
 function postPevent(type, deviceId, props) {
+  const storageEvents = localStorage.getItem("events")
+  let events = []
+  let alreadyPosted = false
+
+  if (storageEvents !== null) {
+    events = JSON.parse(storageEvents)
+  }
+
+  if (events.includes(type)) {
+    alreadyPosted = true
+  } else {
+    events.push(type)
+    localStorage.setItem("events", JSON.stringify(events))
+  }
+
   var body = {
     type: type,
     deviceId: deviceId,
@@ -92,7 +107,7 @@ function postPevent(type, deviceId, props) {
 
   if (props) body.props = props
 
-  postToServer(JSON.stringify(body), "/pevent")
+  if (!alreadyPosted) postToServer(JSON.stringify(body), "/pevent")
 }
 
 function postPidentify(id, traits) {
