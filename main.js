@@ -1,16 +1,14 @@
 setTimeout(() => {
   // SETUP LINK
-  const isFirstVisit = !localStorage.getItem("deviceId")
-  const deviceId =
-    localStorage.getItem("deviceId") ??
-    `${Math.floor(10000 * (new Date().valueOf() + Math.random()))}`
+  let deviceId = localStorage.getItem("deviceId")
 
-  localStorage.setItem("deviceId", deviceId)
-
-  if (isFirstVisit)
+  if (!deviceId) {
+    deviceId = `${Math.floor(10000 * (new Date().valueOf() + Math.random()))}`
+    localStorage.setItem("deviceId", deviceId)
     postPevent("FIRST_VISIT_WEBSITE", deviceId, {
       origin: window.location.pathname,
     })
+  }
 
   let gaID = ""
   try {
@@ -28,13 +26,6 @@ setTimeout(() => {
     if (isBVersion(deviceId) && window.location.pathname !== "/register") {
       e.href = "/register"
       e.target = ""
-      e.addEventListener(
-        "click",
-        () => {
-          postPevent("GO_TO_REGISTER", deviceId, null)
-        },
-        true
-      )
     } else {
       e.href = link
       e.onclick = () => {
@@ -47,13 +38,12 @@ setTimeout(() => {
 
   // REGISTER BUTTON
   if (window.location.pathname === "/register") {
+    postPevent("GO_TO_REGISTER", deviceId, null)
     var submitBtn = document.querySelector("form#email-form input[type=submit]")
-    console.log(submitBtn)
     submitBtn.addEventListener("click", () => {
       var emailField = document.querySelector(
         "form#email-form input[type=email]"
       )
-      console.log(emailField)
       if (validateEmail(emailField.value)) {
         postPidentify(deviceId, { email: emailField.value })
         postPevent("REGISTERED_EMAIL", deviceId, null)
@@ -74,6 +64,8 @@ function isBVersion(id) {
       .slice(-1)[0]
   )
 }
+
+////////////////// UTILS //////////////////
 
 function postToServer(body, path) {
   var headers = new Headers()
