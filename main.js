@@ -54,6 +54,7 @@ setTimeout(() => {
 
 // AB testing : is it version A or version B ?
 function isBVersion(id) {
+  return false
   return Number(
     id
       .toString()
