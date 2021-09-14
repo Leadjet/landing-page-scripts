@@ -39,8 +39,8 @@ setTimeout(() => {
   // REGISTER BUTTON
   if (window.location.pathname === "/register") {
     postPevent("GO_TO_REGISTER", deviceId, null)
-    var submitBtn = document.querySelector("form#email-form input[type=submit]")
-    submitBtn.addEventListener("click", () => {
+    var form = document.querySelector("form#email-form")
+    form.addEventListener("submit", () => {
       var emailField = document.querySelector(
         "form#email-form input[type=email]"
       )
@@ -54,7 +54,6 @@ setTimeout(() => {
 
 // AB testing : is it version A or version B ?
 function isBVersion(id) {
-  return false
   return Number(
     id
       .toString()
