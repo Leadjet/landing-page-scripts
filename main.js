@@ -21,21 +21,6 @@ setTimeout(() => {
     "&ga=" +
     gaID
 
-  // SETUP CTAs
-  document.querySelectorAll(".chrome-store-cta").forEach((e) => {
-    if (isBVersion(deviceId) && window.location.pathname !== "/register") {
-      e.href = "/register"
-      e.target = ""
-    } else {
-      e.href = link
-      e.onclick = () => {
-        postPevent("GO_TO_CHROME_STORE", deviceId, {
-          origin: window.location.pathname,
-        })
-      }
-    }
-  })
-
   // REGISTER BUTTON
   if (window.location.pathname === "/register") {
     postPevent("GO_TO_REGISTER", deviceId, null)
@@ -51,19 +36,6 @@ setTimeout(() => {
     })
   }
 }, 500)
-
-// AB testing : is it version A or version B ?
-function isBVersion(id) {
-  return Number(
-    id
-      .toString()
-      .split("")
-      .reduce((a, v) => Number(a) + Number(v))
-      .toString(2)
-      .split("")
-      .slice(-1)[0]
-  )
-}
 
 ////////////////// UTILS //////////////////
 
