@@ -1,4 +1,25 @@
 setTimeout(() => {
+  // SAVE PARAMS
+  var search = location.search.substring(1)
+  if (search) {
+    var storedParamsObj = {}
+    var storedParams = localStorage.getItem("urlParams")
+    if (storedParams) storedParamsObj = JSON.parse(storedParams)
+    var paramsObj = JSON.parse(
+      '{"' +
+        decodeURI(search)
+          .replace(/"/g, '\\"')
+          .replace(/&/g, '","')
+          .replace(/=/g, '":"') +
+        '"}'
+    )
+    localStorage.setItem(
+      "urlParams",
+      JSON.stringify({ ...storedParamsObj, ...paramsObj })
+    )
+  }
+  var urlParams = localStorage.getItem("urlParams")
+
   // SETUP LINK
   let deviceId = localStorage.getItem("deviceId")
 
@@ -21,6 +42,16 @@ setTimeout(() => {
     "&ga=" +
     gaID
 
+  // CHROME STORE TRACKING
+  document.querySelectorAll(".chrome-store-cta").forEach((e) => {
+    e.href = link
+    e.onclick = () => {
+      postPevent("GO_TO_CHROME_STORE", deviceId, {
+        origin: window.location.pathname,
+      })
+    }
+  })
+
   // REGISTER BUTTON
   if (window.location.pathname === "/register") {
     postPevent("GO_TO_REGISTER", deviceId, null)
@@ -30,12 +61,35 @@ setTimeout(() => {
         "form#email-form input[type=email]"
       )
       if (validateEmail(emailField.value)) {
-        postPidentify(deviceId, { email: emailField.value })
+        postPidentify(deviceId, { email: emailField.value, urlParams })
         postPevent("REGISTERED_EMAIL", deviceId, null)
       }
     })
   }
 }, 500)
+
+////////////////// GOOGLE SIGN-IN //////////////////
+
+function onSignIn(googleUser) {
+  var profile = googleUser.getBasicProfile()
+  var form = document.querySelector("form#email-form")
+  var emailField = document.querySelector("form#email-form input[type=email]")
+
+  emailField.value = profile.getEmail()
+  form.submit()
+}
+
+function renderButton() {
+  gapi.signin2.render("my-signin2", {
+    scope: "profile email",
+    width: 240,
+    height: 50,
+    longtitle: true,
+    theme: "dark",
+    onsuccess: onSuccess,
+    onfailure: onFailure,
+  })
+}
 
 ////////////////// UTILS //////////////////
 
