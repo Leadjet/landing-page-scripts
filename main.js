@@ -19,6 +19,9 @@ setTimeout(() => {
     )
   }
   var urlParams = localStorage.getItem("urlParams")
+  var urlParamsFormatted = Object.entries(JSON.parse(urlParams))
+    .map((e) => e.join("="))
+    .join(";")
 
   // SETUP LINK
   let deviceId = localStorage.getItem("deviceId")
@@ -61,7 +64,7 @@ setTimeout(() => {
         "form#email-form input[type=email]"
       )
       if (validateEmail(emailField.value)) {
-        postPidentify(deviceId, { email: emailField.value, urlParams })
+        postPidentify(deviceId, { email: emailField.value, urlParamsFormatted })
         postPevent("REGISTERED_EMAIL", deviceId, null)
       }
     })
@@ -70,7 +73,6 @@ setTimeout(() => {
 
 ////////////////// GOOGLE SIGN-IN //////////////////
 
-/*
 function onSuccess(googleUser) {
   var profile = googleUser.getBasicProfile()
   var form = document.querySelector("form#email-form")
@@ -87,10 +89,9 @@ function renderButton() {
     height: 50,
     longtitle: true,
     theme: "dark",
-    onsuccess: onSuccess,
+    onsuccess,
   })
 }
-*/
 
 ////////////////// UTILS //////////////////
 
