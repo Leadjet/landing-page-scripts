@@ -1,5 +1,16 @@
+var urlParamsFormatted = ""
+var deviceId = ""
+
 setTimeout(() => {
-  // SAVE PARAMS
+  // Device ID
+  deviceId = localStorage.getItem("deviceId")
+  if (!deviceId) {
+    deviceId = `${Math.floor(10000 * (new Date().valueOf() + Math.random()))}`
+    localStorage.setItem("deviceId", deviceId)
+    postPevent("FIRST_VISIT_WEBSITE", deviceId, { origin: window.location.pathname })
+  }
+
+  // Save query params
   var search = location.search.substring(1)
   if (search) {
     var storedParamsObj = {}
@@ -21,23 +32,9 @@ setTimeout(() => {
     )
   }
 
-  var urlParamsFormatted = ""
   var urlParams = localStorage.getItem("urlParams")
   if (urlParams) {
-    var urlParamsFormatted = Object.entries(JSON.parse(urlParams))
-      .map((e) => e.join("="))
-      .join(";")
-  }
-
-  // SETUP LINK
-  var deviceId = localStorage.getItem("deviceId")
-
-  if (!deviceId) {
-    deviceId = `${Math.floor(10000 * (new Date().valueOf() + Math.random()))}`
-    localStorage.setItem("deviceId", deviceId)
-    postPevent("FIRST_VISIT_WEBSITE", deviceId, {
-      origin: window.location.pathname,
-    })
+    urlParamsFormatted = Object.entries(JSON.parse(urlParams)).map((e) => e.join("=")).join(";")
   }
 
   var gaID = ""
@@ -51,10 +48,25 @@ setTimeout(() => {
     "&ga=" +
     gaID
 
-  // REGISTER BUTTON
+  // Register page
   if (window.location.pathname === "/register") {
-    // CHROME STORE TRACKING
+    // Register page tracking
     postPevent("GO_TO_REGISTER", deviceId, null)
+
+    // Direct form validation
+    document.getElementById("register-form").onsubmit = (e) => {
+      e.preventDefault()
+      register(document.getElementById("email-input").value)
+      displayChromeLink()
+    }
+
+    // Register button
+    document.getElementById("register-btn").onclick = () => {
+      register(document.getElementById("email-input").value)
+      displayChromeLink()
+    }
+
+    // Chrome Store Tracking
     document.querySelectorAll(".chrome-store-cta").forEach((e) => {
       e.href = link
       e.onclick = () => {
@@ -63,39 +75,35 @@ setTimeout(() => {
         })
       }
     })
-
-    var form = document.querySelector("form#email-form")
-    form.addEventListener("submit", () => {
-      var emailField = document.querySelector(
-        "form#email-form input[type=email]"
-      )
-      if (validateEmail(emailField.value)) {
-        postPidentify(deviceId, {
-          email: emailField.value,
-          urlParamsFormatted,
-        })
-        postPevent("REGISTERED_EMAIL", deviceId, null)
-      }
-    })
   }
 }, 500)
+
+function register(email) {
+  if (validateEmail(email)) {
+    postPidentify(deviceId, { email, urlParamsFormatted })
+    postPevent("REGISTERED_EMAIL", deviceId, null)
+  }
+}
+
+function displayChromeLink() {
+  document.getElementById("download-link").style.display = "block"
+  document.getElementById("g-signin").style.display = "none"
+  document.getElementById("register-form").style.display = "none"
+  document.getElementById("register-btn").style.display = "none"
+}
 
 ////////////////// GOOGLE SIGN-IN //////////////////
 
 function onSuccess(googleUser) {
-  var profile = googleUser.getBasicProfile()
-  var form = document.querySelector("form#email-form")
-  var emailField = document.querySelector("form#email-form input[type=email]")
-
-  emailField.value = profile.getEmail()
-  form.submit()
+  register(googleUser.getBasicProfile().getEmail())
+  displayChromeLink()
 }
 
 function renderButton() {
   gapi.signin2.render("g-signin", {
     scope: "profile email",
-    width: 240,
     height: 50,
+    width: 340,
     longtitle: true,
     theme: "dark",
     onsuccess: onSuccess,
