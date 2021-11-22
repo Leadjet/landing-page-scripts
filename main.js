@@ -5,26 +5,32 @@ setTimeout(() => {
     var storedParamsObj = {}
     var storedParams = localStorage.getItem("urlParams")
     if (storedParams) storedParamsObj = JSON.parse(storedParams)
+
     var paramsObj = JSON.parse(
       '{"' +
-        decodeURI(search)
-          .replace(/"/g, '\\"')
-          .replace(/&/g, '","')
-          .replace(/=/g, '":"') +
-        '"}'
+      decodeURI(search)
+        .replace(/"/g, '\\"')
+        .replace(/&/g, '","')
+        .replace(/=/g, '":"') +
+      '"}'
     )
+
     localStorage.setItem(
       "urlParams",
       JSON.stringify({ ...storedParamsObj, ...paramsObj })
     )
   }
+
+  var urlParamsFormatted = ""
   var urlParams = localStorage.getItem("urlParams")
-  var urlParamsFormatted = Object.entries(JSON.parse(urlParams))
-    .map((e) => e.join("="))
-    .join(";")
+  if (urlParams) {
+    var urlParamsFormatted = Object.entries(JSON.parse(urlParams))
+      .map((e) => e.join("="))
+      .join(";")
+  }
 
   // SETUP LINK
-  let deviceId = localStorage.getItem("deviceId")
+  var deviceId = localStorage.getItem("deviceId")
 
   if (!deviceId) {
     deviceId = `${Math.floor(10000 * (new Date().valueOf() + Math.random()))}`
@@ -34,10 +40,10 @@ setTimeout(() => {
     })
   }
 
-  let gaID = ""
+  var gaID = ""
   try {
     gaID = ga.getAll()[0].get("clientId")
-  } catch {}
+  } catch { }
 
   const link =
     "https://chrome.google.com/webstore/detail/leadjet-make-your-crm-wor/kojhcdejfimplnokhhhekhiapceggamn?v=" +
@@ -64,7 +70,10 @@ setTimeout(() => {
         "form#email-form input[type=email]"
       )
       if (validateEmail(emailField.value)) {
-        postPidentify(deviceId, { email: emailField.value, urlParamsFormatted })
+        postPidentify(deviceId, {
+          email: emailField.value,
+          urlParamsFormatted,
+        })
         postPevent("REGISTERED_EMAIL", deviceId, null)
       }
     })
@@ -89,7 +98,7 @@ function renderButton() {
     height: 50,
     longtitle: true,
     theme: "dark",
-    onsuccess,
+    onsuccess: onSuccess,
   })
 }
 
@@ -114,8 +123,8 @@ function postToServer(body, path) {
 
 function postPevent(type, deviceId, props) {
   const storageEvents = localStorage.getItem("events")
-  let events = []
-  let alreadyPosted = false
+  var events = []
+  var alreadyPosted = false
 
   if (storageEvents !== null) {
     events = JSON.parse(storageEvents)
