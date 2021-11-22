@@ -2,13 +2,7 @@ var urlParamsFormatted = ""
 var deviceId = ""
 
 setTimeout(() => {
-  // Device ID
-  deviceId = localStorage.getItem("deviceId")
-  if (!deviceId) {
-    deviceId = `${Math.floor(10000 * (new Date().valueOf() + Math.random()))}`
-    localStorage.setItem("deviceId", deviceId)
-    postPevent("FIRST_VISIT_WEBSITE", deviceId, { origin: window.location.pathname })
-  }
+  getDeviceId()
 
   // Save query params
   var search = location.search.substring(1)
@@ -78,7 +72,18 @@ setTimeout(() => {
   }
 }, 500)
 
+function getDeviceId() {
+  // Device ID
+  deviceId = localStorage.getItem("deviceId")
+  if (!deviceId) {
+    deviceId = `${Math.floor(10000 * (new Date().valueOf() + Math.random()))}`
+    localStorage.setItem("deviceId", deviceId)
+    postPevent("FIRST_VISIT_WEBSITE", deviceId, { origin: window.location.pathname })
+  }
+}
+
 function register(email) {
+  getDeviceId()
   if (validateEmail(email)) {
     postPidentify(deviceId, { email, urlParamsFormatted })
     postPevent("REGISTERED_EMAIL", deviceId, null)
@@ -95,6 +100,8 @@ function displayChromeLink() {
 ////////////////// GOOGLE SIGN-IN //////////////////
 
 function onSuccess(googleUser) {
+  console.log("Successful Google Auth");
+
   register(googleUser.getBasicProfile().getEmail())
   displayChromeLink()
 }
