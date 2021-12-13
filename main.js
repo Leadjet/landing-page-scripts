@@ -106,6 +106,11 @@ function onSuccess(googleUser) {
   displayChromeLink()
 }
 
+function onFailure(googleUser) {
+  console.log("Failed Google Auth");
+  displayChromeLink()
+}
+
 function renderButton() {
   gapi.signin2.render("g-signin", {
     scope: "profile email",
@@ -114,6 +119,7 @@ function renderButton() {
     longtitle: true,
     theme: "dark",
     onsuccess: onSuccess,
+    onFailure: onFailure,
   })
 }
 
