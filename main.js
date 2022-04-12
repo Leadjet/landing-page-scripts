@@ -35,12 +35,14 @@ setTimeout(() => {
   try {
     gaID = ga.getAll()[0].get("clientId")
   } catch { }
-
+  
   const link =
     "https://chrome.google.com/webstore/detail/leadjet-make-your-crm-wor/kojhcdejfimplnokhhhekhiapceggamn?v=" +
     deviceId +
     "&ga=" +
-    gaID
+    gaID +
+    "&utms=" +
+    encodeURIComponent(urlParamsFormatted)
 
   // Register page
   if (window.location.pathname === "/register") {
