@@ -1,8 +1,7 @@
 var urlParamsFormatted = ""
-var deviceId = ""
 
 setTimeout(() => {
-  getDeviceId()
+  const deviceId = getDeviceId()
 
   // Save query params
   var search = location.search.substring(1)
@@ -74,22 +73,12 @@ setTimeout(() => {
   }
 }, 500)
 
-function getDeviceId() {
-  // Device ID
-  deviceId = localStorage.getItem("deviceId")
-  if (!deviceId) {
-    deviceId = `${Math.floor(10000 * (new Date().valueOf() + Math.random()))}`
-    localStorage.setItem("deviceId", deviceId)
-    postPevent("FIRST_VISIT_WEBSITE", deviceId, { origin: window.location.pathname })
-  }
-}
-
 function register(email) {
-  getDeviceId()
-  if (validateEmail(email)) {
-    postPidentify(deviceId, { email, urlParamsFormatted })
-    postPevent("REGISTERED_EMAIL", deviceId, null)
-  }
+  if (!validateEmail(email)) return
+
+  const deviceId = getDeviceId()
+  postPidentify(deviceId, { email, urlParamsFormatted })
+  postPevent("REGISTERED_EMAIL", deviceId, null)
 }
 
 function displayChromeLink() {
@@ -97,6 +86,15 @@ function displayChromeLink() {
   document.getElementById("g-signin").style.display = "none"
   document.getElementById("register-form").style.display = "none"
   document.getElementById("register-btn").style.display = "none"
+}
+
+function getDeviceId() {
+  let deviceId = localStorage.getItem("deviceId")
+  if (deviceId) return deviceId
+
+  deviceId = `${Math.floor(10000 * (new Date().valueOf() + Math.random()))}`
+  localStorage.setItem("deviceId", deviceId)
+  return deviceId
 }
 
 ////////////////// GOOGLE SIGN-IN //////////////////
@@ -134,7 +132,7 @@ function postToServer(body, path) {
   var requestOptions = {
     method: "POST",
     headers: headers,
-    body: body,
+    body: JSON.stringify(body),
     redirect: "follow",
   }
 
@@ -145,37 +143,25 @@ function postToServer(body, path) {
 }
 
 function postPevent(type, deviceId, props) {
-  const storageEvents = localStorage.getItem("events")
   var events = []
-  var alreadyPosted = false
-
+  const storageEvents = localStorage.getItem("events")
   if (storageEvents !== null) {
     events = JSON.parse(storageEvents)
   }
 
-  if (events.includes(type)) {
-    alreadyPosted = true
-  } else {
-    events.push(type)
-    localStorage.setItem("events", JSON.stringify(events))
-  }
+  if (events.includes(type)) return
 
-  var body = {
-    type: type,
-    deviceId: deviceId,
-  }
+  events.push(type)
+  localStorage.setItem("events", JSON.stringify(events))
 
+  var body = { type, deviceId }
   if (props) body.props = props
 
-  if (!alreadyPosted) postToServer(JSON.stringify(body), "/pevent")
+  if (!alreadyPosted) postToServer(body, "/pevent")
 }
 
 function postPidentify(id, traits) {
-  var body = JSON.stringify({
-    anonymousID: id,
-    traits: traits,
-  })
-
+  var body = { anonymousID: id, traits }
   postToServer(body, "/pidentify")
 }
 
