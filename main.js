@@ -34,7 +34,7 @@ setTimeout(() => {
   try {
     gaID = ga.getAll()[0].get("clientId")
   } catch { }
-  
+
   const link =
     "https://chrome.google.com/webstore/detail/leadjet-make-your-crm-wor/kojhcdejfimplnokhhhekhiapceggamn?v=" +
     deviceId +
@@ -157,7 +157,7 @@ function postPevent(type, deviceId, props) {
   var body = { type, deviceId }
   if (props) body.props = props
 
-  if (!alreadyPosted) postToServer(body, "/pevent")
+  postToServer(body, "/pevent")
 }
 
 function postPidentify(id, traits) {
